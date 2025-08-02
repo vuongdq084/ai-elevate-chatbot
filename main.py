@@ -1,8 +1,11 @@
 from user_manager.user import load_user, save_chat
-from context_manager.context import load_context
+from context_manager.context import load_context, build_faiss_index
 from chat_engine.query import query
 
 def main():
+    
+    build_faiss_index("data")
+
     #Step 1: Load user data, searching for previous history.
     user_id = input("Enter your user ID: ")
     user_data = load_user(user_id)

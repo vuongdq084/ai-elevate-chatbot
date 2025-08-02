@@ -1,0 +1,24 @@
+[
+  {
+    "userId": "quyetnk1",
+    "qas": [
+      {
+        "question": "Day la gi",
+        "answer": "La cau tra loi"
+      },
+      {
+        "question": "EC2 la gi",
+        "answer": "La dich vu tren amazon"
+      }
+    ]
+  },
+  {
+    "userId": "vinhkm1",
+    "qas": [
+      {
+        "question": "data la gi",
+        "answer": "la du lieu"
+      }
+    ]
+  }
+]

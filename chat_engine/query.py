@@ -62,8 +62,8 @@ def search_document(keyword):
     }
     return documents.get(keyword.lower(), "Không tìm thấy document phù hợp.")
 
-# Example question triggers function, question = "Tôi muốn tìm thông tin về permission trong dự án"
-# Example question does not trigger function, question = "What is ec2 auto scaling?"
+# Example query triggers function, query("test", "test", "Bạn là chatbot hỗ trợ tra cứu thông tin dự án", "Tôi muốn tìm thông tin về permission trong dự án")
+# Example question does not trigger function, query("test", "test", "Bạn là chatbot hỗ trợ tra cứu thông tin dự án", "What is ec2 auto scaling?")
 def query(user_id, history, context, question):
     messages = [
         {"role": "system", "content": context},

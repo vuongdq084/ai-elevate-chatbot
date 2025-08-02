@@ -1,0 +1,24 @@
+[
+  {
+    "userId": "1",
+    "qas": [
+      {
+        "question": "Example situations:\ncommmand stage a changed file -> add \ncommmand to commit staged file -> commit \nuse suitable command for bellow situation and same style with examples!\ncommand to push commits -> ?",
+        "answer": "command to push commits -> push"
+      }
+    ]
+  },
+  {
+    "userId": "vuongdq",
+    "qas": [
+      {
+        "question": "push a changed file in local to remote repo, think in steps",
+        "answer": "To push a changed file from your local repository to a remote repository, follow these steps:\n\n### Step 1: Navigate to Your Local Repository\nOpen your terminal or command prompt and navigate to the directory of your local Git repository.\n\n```bash\ncd /path/to/your/local/repo\n```\n\n### Step 2: Check the Status of Your Repository\nCheck the status of your repository to see which files have been changed.\n\n```bash\ngit status\n```\n\n### Step 3: Stage the Changed File\nAdd the changed file to the staging area. Replace `filename` with the name of your changed file.\n\n```bash\ngit add filename\n```\n\nIf you want to stage all changed files, you can use:\n\n```bash\ngit add .\n```\n\n### Step 4: Commit the Changes\nCommit the staged changes with a descriptive message.\n\n```bash\ngit commit -m \"Your commit message describing the changes\"\n```\n\n### Step 5: Pull the Latest Changes from Remote (Optional but Recommended)\nBefore pushing your changes, it's a good practice to pull the latest changes from the remote repository to avoid conflicts.\n\n```bash\ngit pull origin master\n```\n\n### Step 6: Push the Changes to the Remote Repository\nPush your committed changes to the remote repository. Replace `origin` with the name of your remote (if different) and `master` with the branch name you are pushing to.\n\n```bash\ngit push origin master\n```\n\n### Step 7: Verify the Push\nYou can verify that your changes have been pushed by checking the remote repository (e.g., on GitHub, GitLab, etc.) or by running:\n\n```bash\ngit log\n```\n\nThis will show you the commit history, including your latest commit.\n\n### Summary\n1. Navigate to your local repository.\n2. Check the status of your repository.\n3. Stage the changed file(s).\n4. Commit the changes.\n5. Pull the latest changes from the remote (optional).\n6. Push the changes to the remote repository.\n7. Verify the push. \n\nFollowing these steps will ensure that your changes are successfully pushed to the remote repository."
+      },
+      {
+        "question": "search document for guideline keyword",
+        "answer": "Chào bạn! Mình đã tìm thấy tài liệu liên quan đến từ khóa \"guideline\". Bạn có thể tham khảo tại đây: [Tài liệu hướng dẫn](https://github.com/your-org/qna-general-guideline). Nếu bạn cần thêm thông tin hoặc tài liệu khác, hãy cho mình biết nhé!"
+      }
+    ]
+  }
+]

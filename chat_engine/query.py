@@ -111,7 +111,8 @@ def query(user_id, history, context, question):
     else:
         answer = response.choices[0].message.content.strip()
 
-    print("Answer:\n")
-    print(answer)
+    #print("Answer:\n")
+    #print(answer)
         
-    return f"Based on context '{context}', the answer to your question is: {answer}."
+    #return f"Based on context '{context}', the answer to your question is: {answer}."
+    return answer

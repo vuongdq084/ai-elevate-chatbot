@@ -1,0 +1,25 @@
+{
+  "user_id": "quyetnk1",
+  "chat_history": [
+    {
+      "question": "Thời tiết hà nội hôm nay như thế nào?",
+      "answer": "Thời tiết ở Hà Nội hôm nay có nhiệt độ 38°C với độ ẩm 65%. Trời nắng và có gió nhẹ.",
+      "timestamp": "2025-08-02T16:10:19.163883"
+    },
+    {
+      "question": "Hôm nay là ngày bao nhiêu",
+      "answer": "Câu hỏi này nằm ngoài phạm vi.",
+      "timestamp": "2025-08-02T16:11:25.523004"
+    },
+    {
+      "question": "Dịch vụ EC2 là gì?",
+      "answer": "Amazon EC2 Auto Scaling is a fully managed service designed to launch or terminate Amazon EC2 instances automatically to help ensure you have the correct number of Amazon EC2 instances available to handle the load for your application. Amazon EC2 Auto Scaling helps you maintain application availability through fleet management for EC2 instances, which detects and replaces unhealthy instances, and by scaling your Amazon EC2 capacity up or down automatically according to conditions you define. You can use Amazon EC2 Auto Scaling to automatically increase the number of Amazon EC2 instances during demand spikes to maintain performance and decrease capacity during lulls to reduce costs.",
+      "timestamp": "2025-08-02T16:15:05.550009"
+    },
+    {
+      "question": "Trả lời tiếng việt đi",
+      "answer": "I apologize, but I cannot connect to the AI service at the moment. Please try again later.",
+      "timestamp": "2025-08-02T16:15:43.455914"
+    }
+  ]
+}

@@ -3,23 +3,11 @@ import os
 import chromadb
 import uuid
 import os
+from chromadb.config import Settings 
 
-# ===== Cấu hình ChromaDB Cloud =====
-CHROMA_CLOUD_HOST = os.getenv("CHROMA_CLOUD_HOST", "api.trychroma.com")
-CHROMA_CLOUD_TENANT = os.getenv("CHROMA_CLOUD_TENANT", "a77c6b71-5d7c-4e9e-b2f3-36c4041e33a2")
-CHROMA_CLOUD_DATABASE = os.getenv("CHROMA_CLOUD_DATABASE", "chatbot-ai")
-CHROMA_CLOUD_API_KEY = os.getenv("CHROMA_CLOUD_API_KEY", "ck-695vecLiLTuRGkTpwQmELG9SbDiLBsU65ncT1CNpDACU")
-
-client = chromadb.HttpClient(
-  ssl=True,
-  host={CHROMA_CLOUD_HOST},
-  tenant={CHROMA_CLOUD_TENANT},
-  database={CHROMA_CLOUD_DATABASE},
-  headers={
-    'x-chroma-token': {CHROMA_CLOUD_API_KEY}
-  }
-)
-
+# ===== Cấu hình ChromaDB Local =====
+client = chromadb.PersistentClient(path="./chroma_db", settings=Settings(allow_reset=True))
+ 
 # Tạo hoặc lấy collection
 collection = client.get_or_create_collection(name="user_qa")
  

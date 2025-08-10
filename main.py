@@ -1,9 +1,11 @@
 from user_manager.user import load_user, save_chat
-from context_manager.context import load_context
+from context_manager.chroma_context import load_context
 from chat_engine.query import query
+from tts_engine.tts import text_to_speech
+from playsound import playsound
  
 def main():
-    #Step 1: Load user data, searching for previous history.
+    # Step 1: Load user data, searching for previous history.
     user_id = input("Enter your user ID: ")
     user_data = load_user(user_id)
  
@@ -40,8 +42,14 @@ def main():
     answer = query(user_id, user_data.get("history", []), context, question)
     print("Answer:", answer)
  
-    # Step 4: Save the chat history with the user's question and answer.
-    # The `save_chat` function expects two separate arguments for question and answer, not a dictionary.
+     # Step 4: Call the TTS function from the new package to generate speech
+    print("Generating speech from the answer...")
+    speech_file = text_to_speech(answer, output_file="answer.wav")
+    playsound(speech_file)
+    #if speech_file:
+        #print(f"You can now open the '{speech_file}' file to listen to the answer.")
+ 
+    # Step 5: Save the chat history with the user's question and answer.
     save_chat(user_id, question, answer)
  
 if __name__ == "__main__":

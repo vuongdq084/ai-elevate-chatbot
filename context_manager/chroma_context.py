@@ -91,13 +91,13 @@ def load_context(question: str, collection_name: str = "git_manual") -> Dict:
             openai_api_base=OPENAI_API_BASE
         )
        
-        # Initialize ChromaDB client with explicit local settings
+        # Initialize ChromaDB client
         try:
             client = chromadb.PersistentClient(path="./chroma_db", settings=Settings(allow_reset=True))
             collection = client.get_collection(name=collection_name)
         except Exception as e:
             print(f"ChromaDB connection/init error: {e}")
-            return {"status": "NOT_FOUND", "context": ""}
+            return {"status": "NOT_FOUND", "context": "", "files": []}
        
         # Get embedding for the question
         question_embedding = embeddings.embed_query(question)
@@ -111,8 +111,22 @@ def load_context(question: str, collection_name: str = "git_manual") -> Dict:
         # Extract documents
         documents = results["documents"][0] if results["documents"] else []
         context = "\n".join(documents)
- 
-        return {"status": "FOUND", "context": context} if context else {"status": "NOT_FOUND", "context": ""}
+
+        # Extract unique file names from metadata
+        metadatas = results["metadatas"][0] if results["metadatas"] else []
+        seen = set()
+        files = []
+        for m in metadatas:
+            src = m.get("source", "unknown")
+            if src not in seen:
+                seen.add(src)
+                files.append(src)
+
+        return {
+            "status": "FOUND" if context else "NOT_FOUND",
+            "context": context,
+            "files": files
+        }
     except Exception as e:
         print(f"Error loading context: {e}")
-        return {"status": "NOT_FOUND", "context": ""}
+        return {"status": "NOT_FOUND", "context": "", "files": []}

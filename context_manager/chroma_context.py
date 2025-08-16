@@ -108,12 +108,18 @@ def load_context(question: str, collection_name: str = "git_manual") -> Dict:
             n_results=5
         )
        
-        # Extract documents
+        # Extract documents and format context
         documents = results["documents"][0] if results["documents"] else []
-        context = "\n".join(documents)
+        metadatas = results["metadatas"][0] if results["metadatas"] else []
+
+        formatted_context = []
+        for doc, meta in zip(documents, metadatas):
+            src = meta.get("source", "unknown")
+            formatted_context.append(f"[Context:{doc} Link:{src}]")
+
+        context = "".join(formatted_context)
 
         # Extract unique file names from metadata
-        metadatas = results["metadatas"][0] if results["metadatas"] else []
         seen = set()
         files = []
         for m in metadatas:

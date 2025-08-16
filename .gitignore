@@ -1,0 +1,23 @@
+# Ignore file Python compiled
+__pycache__/
+*.pyc
+*.pyo
+
+# Ignore virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# Ignore Jupyter Notebook checkpoint
+.ipynb_checkpoints/
+
+# Ignore file log
+*.log
+
+# Ignore file tạm
+*.tmp
+
+# Ignore db
+chroma/
+chroma_db/

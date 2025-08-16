@@ -65,6 +65,9 @@ def search_document(keyword):
 # Example query triggers function, query("test", "test", "Bạn là chatbot hỗ trợ tra cứu thông tin dự án", "Tôi muốn tìm thông tin về permission trong dự án")
 # Example question does not trigger function, query("test", "test", "Bạn là chatbot hỗ trợ tra cứu thông tin dự án", "What is ec2 auto scaling?")
 def query(user_id, history, context, question):
+
+    # Dummy query logic
+    return f"Based on context '{context}', the answer to your question is: [dummy answer]."
     messages = [
         {"role": "system", "content": context},
         {"role": "user", "content": question}
@@ -73,13 +76,15 @@ def query(user_id, history, context, question):
     function_definitions = [
         {
             "name": "search_document",
-            "description": "Tìm document phù hợp với keyword từ câu hỏi người dùng",
+            # "description": "Tìm document phù hợp với keyword từ câu hỏi người dùng",
+            "description": "Find the relevant document based on the keyword from the user question, and return the answer in user's language",
             "parameters": {
                 "type": "object",
                 "properties": {
                     "keyword": {
                         "type": "string",
-                        "description": "Từ khóa cần tìm trong document, ví dụ: permission, hệ thống, guideline"
+                        # "description": "Từ khóa cần tìm trong document, ví dụ: permission, hệ thống, guideline"
+                        "description": "Read the user question and extract the keyword to search for the relevant document, e.g., permission, system, guideline"
                     }
                 },
                 "required": ["keyword"]
@@ -100,11 +105,14 @@ def query(user_id, history, context, question):
         print("Tìm thấy document:", result)
  
         # Gửi lại OpenAI để tạo phản hồi cho người dùng
+        with open('system.txt','r',encoding = 'utf-8') as f:
+            system_prompt = f.read()
+        
         followup_messages = [
-            {"role": "system", "content": "Bạn là trợ lý kỹ thuật hỗ trợ người dùng tìm tài liệu dự án."},
+            {"role": "system", "content": system_prompt},
             {"role": "user", "content": question},
-            {"role": "assistant", "content": f"Với {question}, câu trả lời là: {result}"},
-            {"role": "user", "content": "Hãy phản hồi lại người dùng bằng một câu trả lời thân thiện, nếu tìm thấy document phải cho thêm link document vào câu trả lời. Nếu không tìm thấy hỏi thêm thông tin"}
+            {"role": "assistant", "content": f"Với {question}, câu trả lời là: {result}"}
+            # {"role": "user", "content": "Hãy phản hồi lại người dùng bằng một câu trả lời thân thiện, nếu tìm thấy document phải cho thêm link document vào câu trả lời. Nếu không tìm thấy hỏi thêm thông tin"}
         ]
         response = get_response(followup_messages)
         answer = response.choices[0].message.content.strip()

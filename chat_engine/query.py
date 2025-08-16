@@ -1,22 +1,38 @@
-from openai import AzureOpenAI
+from dotenv import load_dotenv
 import os
 import json
- 
-os.environ["AZURE_OPENAI_ENDPOINT"] = "https://aiportalapi.stu-platform.live/jpe"
-os.environ["AZURE_OPENAI_API_KEY"] = ""
-os.environ["AZURE_DEPLOYMENT_NAME"] = "GPT-4o-mini"
+
+from langchain_openai import AzureChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.tools import tool
+from langchain_core.output_parsers import StrOutputParser
+from langgraph.prebuilt import create_react_agent
+from openai import AzureOpenAI
+
+load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_API_BASE = os.getenv("OPENAI_API_BASE")
+DEPLOYMENT_NAME = "GPT-4o-mini"
  
 # Step 1: Init OpenAI client
-api_version = "2024-07-01-preview"
-client = AzureOpenAI(
-  api_version=api_version,
-  azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-  api_key=os.getenv("AZURE_OPENAI_API_KEY"),
+api_version = "2024-07-01-preview" 
+client = AzureOpenAI( 
+   api_version=api_version, 
+   azure_endpoint=OPENAI_API_BASE, 
+   api_key=OPENAI_API_KEY, 
+)
+llm = AzureChatOpenAI(
+    deployment_name=DEPLOYMENT_NAME,
+    api_version="2024-07-01-preview",
+    api_key=OPENAI_API_KEY,
+    azure_endpoint=OPENAI_API_BASE,
+    temperature=0.3,
+    max_tokens=500
 )
 
 def get_response_with_function(messages, function_definitions):
   response = client.chat.completions.create(
-    model=os.getenv("AZURE_DEPLOYMENT_NAME"),
+    model=DEPLOYMENT_NAME,
     messages=messages,
     temperature=0.3,
     max_tokens=500,
@@ -28,7 +44,7 @@ def get_response_with_function(messages, function_definitions):
 
 def get_response(messages):
   response = client.chat.completions.create(
-    model=os.getenv("AZURE_DEPLOYMENT_NAME"),
+    model=DEPLOYMENT_NAME,
     messages=messages,
     temperature=0.3,
     max_tokens=500
@@ -36,8 +52,10 @@ def get_response(messages):
 
   return response
 
-def search_document(keyword):
-    # Dummy search
+# Step 2: Define search tool
+@tool
+def search_document(keyword: str) -> str:
+    """Tìm document phù hợp với keyword từ câu hỏi người dùng."""
     documents = {
         "permission": "https://github.com/your-org/qna-permission-guideline",
         "hệ thống": "https://github.com/your-org/qna-system-architecture",
@@ -62,30 +80,36 @@ def search_document(keyword):
     }
     return documents.get(keyword.lower(), "Không tìm thấy document phù hợp.")
 
+prompt = ChatPromptTemplate.from_messages([
+   ("system", """
+    You are a chatbot that supports project information lookup.
+    You are provided with the following information, and you are only allowed to search within it to answer.
+    {context}
+    """),
+    ("user", "{question}")
+])
+
+# Create a ReAct agent
+agent = create_react_agent(llm, [search_document])
+
+# Bind the tool to the LLM (LangChain handles function-calling automatically)
+# llm_with_tools = llm.bind_tools([search_document])
+# llchain = prompt | llm_with_tools | StrOutputParser()
+
 # Example query triggers function, query("test", "test", "Bạn là chatbot hỗ trợ tra cứu thông tin dự án", "Tôi muốn tìm thông tin về permission trong dự án")
 # Example question does not trigger function, query("test", "test", "Bạn là chatbot hỗ trợ tra cứu thông tin dự án", "What is ec2 auto scaling?")
 def query(user_id, history, context, question):
+    answer = agent.invoke({"system": context, "human": question})
+    print(context, question)
+    print(answer)
     messages = [
-        {"role": "system", "content": context},
+        {"role": "system", "content": """You are a chatbot that supports project information lookup.
+    You are provided with the following information, and you are only allowed to search within it to answer.
+    {context}"""},
         {"role": "user", "content": question}
     ]
-
-    function_definitions = [
-        {
-            "name": "search_document",
-            "description": "Tìm document phù hợp với keyword từ câu hỏi người dùng",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "keyword": {
-                        "type": "string",
-                        "description": "Từ khóa cần tìm trong document, ví dụ: permission, hệ thống, guideline"
-                    }
-                },
-                "required": ["keyword"]
-            }
-        }
-    ]
+    print(messages)
+    function_definitions = [ { "name": "search_document", "description": "Tìm document phù hợp với keyword từ câu hỏi người dùng", "parameters": { "type": "object", "properties": { "keyword": { "type": "string", "description": "Từ khóa cần tìm trong document, ví dụ: permission, hệ thống, guideline" } }, "required": ["keyword"] } } ]
     response = get_response_with_function(messages, function_definitions)
 
     # User prompt matches with function
@@ -97,7 +121,7 @@ def query(user_id, history, context, question):
         # Parse arguments và gọi hàm
         arguments = json.loads(func_call.arguments)
         result = search_document(arguments["keyword"])
-        print("Tìm thấy document:", result)
+        print(result)
  
         # Gửi lại OpenAI để tạo phản hồi cho người dùng
         followup_messages = [
@@ -111,8 +135,7 @@ def query(user_id, history, context, question):
     else:
         answer = response.choices[0].message.content.strip()
 
-    #print("Answer:\n")
-    #print(answer)
+    print("Answer:\n")
+    print(answer)
         
-    #return f"Based on context '{context}', the answer to your question is: {answer}."
     return answer

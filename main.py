@@ -6,41 +6,43 @@ from playsound import playsound
  
 def main():
     # Step 1: Load user data, searching for previous history.
-    user_id = input("Enter your user ID: ")
-    user_data = load_user(user_id)
+    # user_id = input("Enter your user ID: ")
+    # user_data = load_user(user_id)
  
-    if user_data["status"] == "FOUND":
-        print("Loaded history:")
-        # The history from load_user is a single string, so we can't iterate.
-        # Let's just print it directly.
-        print(user_data["history"])
-    else:
-        print("No previous history found.")
+    # if user_data["status"] == "FOUND":
+    #     print("Loaded history:")
+    #     # The history from load_user is a single string, so we can't iterate.
+    #     # Let's just print it directly.
+    #     print(user_data["history"])
+    # else:
+    #     print("No previous history found.")
  
     # Step 2: Load context based on the user's question, checking if it exists.
     # question = input("Enter your question: ")
-    print("Enter your question: ")
-    lines = []
     while True:
-        line = input()
-        if line == "":
-            break
-        lines.append(line)
+        print("Enter your question: ")
+        lines = []
+        while True:
+            line = input()
+            if line == "":
+                break
+            lines.append(line)
 
-    question = "\n".join(lines)
+        question = "\n".join(lines)
 
-    context_data = load_context(question)
- 
-    if context_data["status"] == "FOUND":
-        context = context_data["context"]
-    else:
-        context = ""
-        print("No relevant context found.")
+        context_data = load_context(question)
     
-    # Step 3: Query the chat engine with the user's question and context.
-    # FIX: The `query` function was missing the 'question' argument.
-    answer = query(user_id, user_data.get("history", []), context, question)
-    print("Answer:", answer)
+        if context_data["status"] == "FOUND":
+            context = context_data["context"]
+        else:
+            context = ""
+            print("No relevant context found.")
+        
+        # Step 3: Query the chat engine with the user's question and context.
+        # FIX: The `query` function was missing the 'question' argument.
+        
+        answer = query("test", "test", context, question)
+        print("Answer:", answer)
  
      # Step 4: Call the TTS function from the new package to generate speech
     print("Generating speech from the answer...")

@@ -1,18 +1,20 @@
 from dotenv import load_dotenv
 import os
-import json
-
-from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from langchain_openai import AzureChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from langchain_core.tools import tool
+from langchain.agents import create_openai_functions_agent, AgentExecutor
+from langchain.agents import initialize_agent, Tool
 
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 OPENAI_API_BASE = os.getenv("OPENAI_API_BASE")
 DEPLOYMENT_NAME = "GPT-4o-mini"
- 
-# Step 1: Init client
+
+# ====================
+# 2. Init LLM
+# ====================
 llm = AzureChatOpenAI(
     deployment_name=DEPLOYMENT_NAME,
     api_version="2024-07-01-preview",
@@ -22,7 +24,8 @@ llm = AzureChatOpenAI(
     max_tokens=500
 )
 
-# Step 2: Define search tool
+# 3. Define Tool (function calling)
+# ====================
 @tool
 def search_document(keyword: str) -> str:
     """
@@ -53,19 +56,10 @@ def search_document(keyword: str) -> str:
     }
     return documents.get(keyword.lower(), "Không tìm thấy document phù hợp.")
 
-prompt = ChatPromptTemplate.from_messages([
-   ("system", """
-    You are a chatbot that supports project information lookup.
-    You are provided with the following information, and you are only allowed to search within it to answer.
-    {context}
-    """),
-    ("human", "{question}")
-])
-
-# Define Tool
+# Define Tool for Agent
 chat_with_tools = llm.bind_tools([search_document])
 
-def query(user_id, history, context, question):
+def query(context: str, question: str) -> str:
     # Gửi câu hỏi, LLM tự quyết định có gọi tool không
     response = chat_with_tools.invoke([
         SystemMessage(content=context),
@@ -91,5 +85,5 @@ def query(user_id, history, context, question):
 # Example usage
 if __name__ == "__main__":
     ctx = "Bạn là chatbot hỗ trợ tra cứu thông tin dự án"
-    print("Q1:", query("test", [], ctx, "I want to find infomation about álslsflfa inside the project"))
-    print("Q2:", query("test", [], ctx, "What is EC2 auto scaling?"))
+    print("Q1:", query(ctx, "I want to find infomation about álslsflfa inside the project"))
+    print("Q2:", query(ctx, "What is EC2 auto scaling?"))

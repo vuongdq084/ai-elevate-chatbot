@@ -67,7 +67,7 @@ def search_document(keyword):
 def query(user_id, history, context, question):
 
     # Dummy query logic
-    return f"Based on context '{context}', the answer to your question is: [dummy answer]."
+    # return f"Based on context '{context}', the answer to your question is: [dummy answer]."
     messages = [
         {"role": "system", "content": context},
         {"role": "user", "content": question}

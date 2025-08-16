@@ -33,7 +33,7 @@ def load_documents_from_folder(folder_path: str) -> List[Document]:
 def build_chroma_index(folder_path: str, collection_name: str = "git_manual"):
     documents = load_documents_from_folder(folder_path)
  
-    splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=200)
     chunks = splitter.split_documents(documents)
  
     embeddings = OpenAIEmbeddings(

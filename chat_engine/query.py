@@ -6,7 +6,7 @@ from langchain_openai import AzureChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.tools import tool
 from langchain_core.output_parsers import StrOutputParser
-from langgraph.prebuilt import create_react_agent
+# from langgraph.prebuilt import create_react_agent
 from openai import AzureOpenAI
 
 load_dotenv()
@@ -90,16 +90,16 @@ prompt = ChatPromptTemplate.from_messages([
 ])
 
 # Create a ReAct agent
-agent = create_react_agent(llm, [search_document])
+# agent = create_react_agent(llm, [search_document])
 
 # Bind the tool to the LLM (LangChain handles function-calling automatically)
-# llm_with_tools = llm.bind_tools([search_document])
-# llchain = prompt | llm_with_tools | StrOutputParser()
+llm_with_tools = llm.bind_tools([search_document])
+llchain = prompt | llm_with_tools | StrOutputParser()
 
 # Example query triggers function, query("test", "test", "Bạn là chatbot hỗ trợ tra cứu thông tin dự án", "Tôi muốn tìm thông tin về permission trong dự án")
 # Example question does not trigger function, query("test", "test", "Bạn là chatbot hỗ trợ tra cứu thông tin dự án", "What is ec2 auto scaling?")
 def query(user_id, history, context, question):
-    answer = agent.invoke({"system": context, "human": question})
+    answer = llchain.invoke({"system": context, "human": question})
     print(context, question)
     print(answer)
     messages = [

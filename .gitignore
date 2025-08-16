@@ -21,3 +21,4 @@ env/
 # Ignore db
 chroma/
 chroma_db/
+answer.wav

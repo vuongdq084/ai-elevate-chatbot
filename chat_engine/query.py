@@ -1,6 +1,5 @@
 from dotenv import load_dotenv
 import os
-import json
 
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from langchain_openai import AzureChatOpenAI
@@ -22,7 +21,7 @@ llm = AzureChatOpenAI(
     max_tokens=500
 )
 
-# Step 2: Define search tool
+# Step 2: Define search tool - mock function
 @tool
 def search_document(keyword: str) -> str:
     """
@@ -90,6 +89,5 @@ def query(user_id, history, context, question):
 
 # Example usage
 if __name__ == "__main__":
-    ctx = "Bạn là chatbot hỗ trợ tra cứu thông tin dự án"
-    print("Q1:", query("test", [], ctx, "I want to find infomation about álslsflfa inside the project"))
-    print("Q2:", query("test", [], ctx, "What is EC2 auto scaling?"))
+    print("Q1:", query("test", [], "", "I want to find infomation about álslsflfa inside the project"))
+    print("Q2:", query("test", [], "", "What is EC2 auto scaling?"))

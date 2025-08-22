@@ -1,43 +1,33 @@
-from openai import AzureOpenAI
+from dotenv import load_dotenv
 import os
-import json
+
+from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+from langchain_openai import AzureChatOpenAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.tools import tool
+
+load_dotenv()
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_API_BASE = os.getenv("OPENAI_API_BASE")
+DEPLOYMENT_NAME = "GPT-4o-mini"
  
-os.environ["AZURE_OPENAI_ENDPOINT"] = "https://aiportalapi.stu-platform.live/jpe"
-os.environ["AZURE_OPENAI_API_KEY"] = ""
-os.environ["AZURE_DEPLOYMENT_NAME"] = "GPT-4o-mini"
- 
-# Step 1: Init OpenAI client
-api_version = "2024-07-01-preview"
-client = AzureOpenAI(
-  api_version=api_version,
-  azure_endpoint=os.getenv("AZURE_OPENAI_ENDPOINT"),
-  api_key=os.getenv("AZURE_OPENAI_API_KEY"),
-)
-
-def get_response_with_function(messages, function_definitions):
-  response = client.chat.completions.create(
-    model=os.getenv("AZURE_DEPLOYMENT_NAME"),
-    messages=messages,
-    temperature=0.3,
-    max_tokens=500,
-    functions=function_definitions,
-    function_call="auto"
-  )
-
-  return response
-
-def get_response(messages):
-  response = client.chat.completions.create(
-    model=os.getenv("AZURE_DEPLOYMENT_NAME"),
-    messages=messages,
+# Step 1: Init client
+llm = AzureChatOpenAI(
+    deployment_name=DEPLOYMENT_NAME,
+    api_version="2024-07-01-preview",
+    api_key=OPENAI_API_KEY,
+    azure_endpoint=OPENAI_API_BASE,
     temperature=0.3,
     max_tokens=500
-  )
+)
 
-  return response
-
-def search_document(keyword):
-    # Dummy search
+# Step 2: Define search tool - mock function
+@tool
+def search_document(keyword: str) -> str:
+    """
+    Tìm document phù hợp với keyword từ câu hỏi người dùng. Ví dụ: permission, hệ thống, guideline
+    Nếu không có thì trả về 'Không tìm thấy document phù hợp.'
+    """
     documents = {
         "permission": "https://github.com/your-org/qna-permission-guideline",
         "hệ thống": "https://github.com/your-org/qna-system-architecture",
@@ -58,61 +48,46 @@ def search_document(keyword):
         "incident": "https://github.com/your-org/qna-incident-response",
         "sla": "https://github.com/your-org/qna-sla-and-slo",
         "security": "https://github.com/your-org/qna-security-guidelines",
-        "architecture": "https://github.com/your-org/qna-system-design"
+        "architecture": "https://github.com/your-org/qna-system-design",
     }
     return documents.get(keyword.lower(), "Không tìm thấy document phù hợp.")
 
-# Example query triggers function, query("test", "test", "Bạn là chatbot hỗ trợ tra cứu thông tin dự án", "Tôi muốn tìm thông tin về permission trong dự án")
-# Example question does not trigger function, query("test", "test", "Bạn là chatbot hỗ trợ tra cứu thông tin dự án", "What is ec2 auto scaling?")
+prompt = ChatPromptTemplate.from_messages([
+   ("system", """
+    You are a chatbot that supports project information lookup.
+    You are provided with the following information, and you are only allowed to search within it to answer.
+    {context}
+    """),
+    ("human", "{question}")
+])
+
+# Define Tool
+chat_with_tools = llm.bind_tools([search_document])
+
 def query(user_id, history, context, question):
-    messages = [
-        {"role": "system", "content": context},
-        {"role": "user", "content": question}
-    ]
+    # Gửi câu hỏi, LLM tự quyết định có gọi tool không
+    response = chat_with_tools.invoke([
+        SystemMessage(content=context),
+        HumanMessage(content=question)
+    ])
 
-    function_definitions = [
-        {
-            "name": "search_document",
-            "description": "Tìm document phù hợp với keyword từ câu hỏi người dùng",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "keyword": {
-                        "type": "string",
-                        "description": "Từ khóa cần tìm trong document, ví dụ: permission, hệ thống, guideline"
-                    }
-                },
-                "required": ["keyword"]
-            }
-        }
-    ]
-    response = get_response_with_function(messages, function_definitions)
+    # Nếu model gọi function, response sẽ có ToolMessage
+    if response.tool_calls:
+        # Lấy tool_call đầu tiên
+        tool_call = response.tool_calls[0]
+        if tool_call["name"] == "search_document":
+            doc = search_document.invoke(tool_call["args"])
+            # Gửi lại để model trả lời thân thiện
+            followup = llm.invoke([
+                SystemMessage(content="Bạn là trợ lý kỹ thuật hỗ trợ người dùng tìm tài liệu dự án."),
+                HumanMessage(content=question),
+                AIMessage(content=f"Kết quả tìm thấy: {doc}"),
+                HumanMessage(content="Hãy trả lời lại người dùng một cách thân thiện, kèm link nếu có.")
+            ])
+            return followup.content.strip()
+    return response.content.strip()
 
-    # User prompt matches with function
-    if response.choices[0].finish_reason == "function_call":
-        func_call = response.choices[0].message.function_call
-        print("Function name:", func_call.name)
-        print("Arguments:", func_call.arguments)
- 
-        # Parse arguments và gọi hàm
-        arguments = json.loads(func_call.arguments)
-        result = search_document(arguments["keyword"])
-        print("Tìm thấy document:", result)
- 
-        # Gửi lại OpenAI để tạo phản hồi cho người dùng
-        followup_messages = [
-            {"role": "system", "content": "Bạn là trợ lý kỹ thuật hỗ trợ người dùng tìm tài liệu dự án."},
-            {"role": "user", "content": question},
-            {"role": "assistant", "content": f"Với {question}, câu trả lời là: {result}"},
-            {"role": "user", "content": "Hãy phản hồi lại người dùng bằng một câu trả lời thân thiện, nếu tìm thấy document phải cho thêm link document vào câu trả lời. Nếu không tìm thấy hỏi thêm thông tin"}
-        ]
-        response = get_response(followup_messages)
-        answer = response.choices[0].message.content.strip()
-    else:
-        answer = response.choices[0].message.content.strip()
-
-    #print("Answer:\n")
-    #print(answer)
-        
-    #return f"Based on context '{context}', the answer to your question is: {answer}."
-    return answer
+# Example usage
+if __name__ == "__main__":
+    print("Q1:", query("test", [], "", "I want to find infomation about álslsflfa inside the project"))
+    print("Q2:", query("test", [], "", "What is EC2 auto scaling?"))

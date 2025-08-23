@@ -67,6 +67,7 @@ def query(user_id, history, context, question):
     # Debug
     built_prompt = prompt.invoke({
         "context": context,
+        "history": history,
         "question": question
     })
     print("=== Prompt sent to LLM ===")

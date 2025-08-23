@@ -3,7 +3,8 @@ import os
 import chromadb
 import uuid
 import os
-from chromadb.config import Settings 
+from chromadb.config import Settings
+from datetime import datetime
 
 # ===== Cấu hình ChromaDB Local =====
 client = chromadb.PersistentClient(path="./chroma_db", settings=Settings(allow_reset=True))
@@ -12,29 +13,37 @@ client = chromadb.PersistentClient(path="./chroma_db", settings=Settings(allow_r
 collection = client.get_or_create_collection(name="user_qa")
  
 # START - public function
-def load_user(user_id):
+def load_user(user_id, top_k = 5):
     results = collection.get(where={"userId": user_id})
     if not results["ids"]:
         return {"status": "NOT_FOUND", "history": []}
     else :
-        history_list = []
-        user_data = {}
+        items = []
         for meta, doc in zip(results["metadatas"], results["documents"]):
-            uid = meta["userId"]
-            user_data.setdefault(uid, []).append((meta["question"], doc))
+            items.append({
+                "question": meta["question"],
+                "answer": doc,
+                "createdAt": meta.get("createdAt")
+            })
+        items.sort(key=lambda x: x["createdAt"], reverse=True)
+        
+        if top_k > 0 :
+            recent = items[:top_k]
 
-        for user_id, qas in user_data.items():
-            for i, (q, a) in enumerate(qas, 1):
-                history_list.append(f"Q: {q} - A: {a}")
+        history_list = [
+            f"Question: {item['question']} - Answer: {item['answer']}" for item in recent
+        ]
         data_user_history = " | ".join(history_list)
+
         return {"status": "FOUND", "history": data_user_history}
  
 def save_chat(user_id, question, answer):
     qa_id = str(uuid.uuid4())
+    timestamp = datetime.utcnow().isoformat()
 
     collection.add(
         ids=[qa_id],
         documents=[answer],
-        metadatas=[{"userId": user_id, "question": question}]
+        metadatas=[{"userId": user_id, "question": question, "createdAt": timestamp}]
     )
 # END - public function

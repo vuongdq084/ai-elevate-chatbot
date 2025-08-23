@@ -4,10 +4,6 @@ Context
 
 {context}
  
-Chat History
-
-{history}
- 
 Your behavior follows these rules:
  
 1. Language Support

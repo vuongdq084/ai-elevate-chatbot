@@ -54,26 +54,20 @@ def search_document(keyword: str) -> str:
     return documents.get(keyword.lower(), "Không tìm thấy document phù hợp.")
 
 with open('chat_engine/system_prompt.txt','r',encoding = 'utf-8') as f:
-    system_prompt = f.read()
-
-prompt = ChatPromptTemplate.from_messages([
-   ("system", system_prompt),
-    ("human", "{question}")
-])
+    system_prompt_template = f.read()
 
 # Define Tool
 chat_with_tools = llm.bind_tools([search_document])
 
 def query(user_id, history, context, question):
-    # Debug
-    built_prompt = prompt.invoke({
-        "context": context,
-        "history": history,
-        "question": question
-    })
-    print("=== Prompt sent to LLM ===")
-    print(built_prompt.to_string())
+    system_prompt = system_prompt_template.format(context=context)
 
+    # Debug
+    
+    print("=== System Message sent to LLM ===")
+    print(system_prompt)
+    print("=== User Message ====")
+    print(question)
     # Load user questions & answers
     user_data = get_user_questions_answers(user_id)
     history_messages = []
@@ -87,7 +81,7 @@ def query(user_id, history, context, question):
 
     # Gửi câu hỏi, LLM tự quyết định có gọi tool không
     response = chat_with_tools.invoke([
-        SystemMessage(content=context),
+        SystemMessage(content=system_prompt),
         *history_messages,
         HumanMessage(content=question)
     ])

@@ -52,12 +52,11 @@ def search_document(keyword: str) -> str:
     }
     return documents.get(keyword.lower(), "Không tìm thấy document phù hợp.")
 
+with open('chat_engine/system_prompt.txt','r',encoding = 'utf-8') as f:
+    system_prompt = f.read()
+
 prompt = ChatPromptTemplate.from_messages([
-   ("system", """
-    You are a chatbot that supports project information lookup.
-    You are provided with the following information, and you are only allowed to search within it to answer.
-    {context}
-    """),
+   ("system", system_prompt),
     ("human", "{question}")
 ])
 

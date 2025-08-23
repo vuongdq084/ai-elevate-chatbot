@@ -33,7 +33,7 @@ def load_documents_from_folder(folder_path: str) -> List[Document]:
 def build_chroma_index(folder_path: str, collection_name: str = "git_manual"):
     documents = load_documents_from_folder(folder_path)
  
-    splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+    splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
     chunks = splitter.split_documents(documents)
  
     embeddings = OpenAIEmbeddings(
@@ -105,7 +105,7 @@ def load_context(question: str, collection_name: str = "git_manual") -> Dict:
         # Search for similar documents
         results = collection.query(
             query_embeddings=[question_embedding],
-            n_results=5
+            n_results=3
         )
        
         # Extract documents and format context
@@ -115,7 +115,7 @@ def load_context(question: str, collection_name: str = "git_manual") -> Dict:
         formatted_context = []
         for doc, meta in zip(documents, metadatas):
             src = meta.get("source", "unknown")
-            formatted_context.append(f"[Context:{doc} Link:{src}]")
+            formatted_context.append(f"[Context:{doc} \n Link:{src}] \n")
 
         context = "".join(formatted_context)
 

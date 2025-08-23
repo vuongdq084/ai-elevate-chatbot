@@ -65,6 +65,13 @@ prompt = ChatPromptTemplate.from_messages([
 chat_with_tools = llm.bind_tools([search_document])
 
 def query(user_id, history, context, question):
+    # Debug
+    built_prompt = prompt.invoke({
+        "context": context,
+        "question": question
+    })
+    print("=== Prompt sent to LLM ===")
+    print(built_prompt.to_string())
     # Gửi câu hỏi, LLM tự quyết định có gọi tool không
     response = chat_with_tools.invoke([
         SystemMessage(content=context),
@@ -91,3 +98,4 @@ def query(user_id, history, context, question):
 if __name__ == "__main__":
     print("Q1:", query("test", [], "", "I want to find infomation about álslsflfa inside the project"))
     print("Q2:", query("test", [], "", "What is EC2 auto scaling?"))
+    print("Q3:", query("test", [], "", "I want to find infomation about permission inside the project"))

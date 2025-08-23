@@ -8,7 +8,7 @@ from context_manager.chroma_context import build_chroma_index
 def main():
     print("🚀 Building ChromaDB index from Git manual chunks...")
     try:
-        build_chroma_index("data/git_manual_chunks", "git_manual")
+        build_chroma_index("data/git_manual", "git_manual")
         print("✅ ChromaDB index built successfully!")
         print("📁 ChromaDB data is stored in './chroma_db' directory")
         print("🎉 You can now use the chatbot with ChromaDB!")

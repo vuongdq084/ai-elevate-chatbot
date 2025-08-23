@@ -18,18 +18,9 @@ def main():
     #     print("No previous history found.")
  
     # Step 2: Load context based on the user's question, checking if it exists.
-    # question = input("Enter your question: ")
     while True:
         print("Enter your question: ")
-        lines = []
-        while True:
-            line = input()
-            if line == "":
-                break
-            lines.append(line)
-
-        question = "\n".join(lines)
-
+        question = input().strip()
         context_data = load_context(question)
     
         if context_data["status"] == "FOUND":
@@ -39,8 +30,6 @@ def main():
             print("No relevant context found.")
         
         # Step 3: Query the chat engine with the user's question and context.
-        # FIX: The `query` function was missing the 'question' argument.
-        
         answer = query("test", "test", context, question)
         print("Answer:", answer)
  

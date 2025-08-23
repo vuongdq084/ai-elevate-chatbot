@@ -18,15 +18,15 @@ def load_documents_from_folder(folder_path: str) -> List[Document]:
     documents = []
     for root, _, files in os.walk(folder_path):
         for file in files:
-            if file.endswith(".txt"):
-                full_path = os.path.join(root, file)
-                try:
-                    # Use encoding="utf-8" to avoid encoding issues
-                    loader = TextLoader(full_path, encoding="utf-8")
-                    docs = loader.load()
-                    documents.extend(docs)
-                except Exception as e:
-                    print(f"Warning: Could not load {full_path}: {e}")
+            # if file.endswith(".txt"):
+            full_path = os.path.join(root, file)
+            try:
+                # Use encoding="utf-8" to avoid encoding issues
+                loader = TextLoader(full_path, encoding="utf-8")
+                docs = loader.load()
+                documents.extend(docs)
+            except Exception as e:
+                print(f"Warning: Could not load {full_path}: {e}")
     return documents
  
 # ✅ Build ChromaDB index from documents and save locally
@@ -108,12 +108,18 @@ def load_context(question: str, collection_name: str = "git_manual") -> Dict:
             n_results=5
         )
        
-        # Extract documents
+        # Extract documents and format context
         documents = results["documents"][0] if results["documents"] else []
-        context = "\n".join(documents)
+        metadatas = results["metadatas"][0] if results["metadatas"] else []
+
+        formatted_context = []
+        for doc, meta in zip(documents, metadatas):
+            src = meta.get("source", "unknown")
+            formatted_context.append(f"[Context:{doc} Link:{src}]")
+
+        context = "".join(formatted_context)
 
         # Extract unique file names from metadata
-        metadatas = results["metadatas"][0] if results["metadatas"] else []
         seen = set()
         files = []
         for m in metadatas:

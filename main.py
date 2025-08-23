@@ -33,7 +33,7 @@ def main():
         print("Answer:", answer)
         save_chat(user_id, question, answer)
         user_data = load_user(user_id)
-        chat_history = user_data["history"][-1000:]
+        chat_history = user_data["history"]
  
      # Step 4: Call the TTS function from the new package to generate speech
     print("Generating speech from the answer...")

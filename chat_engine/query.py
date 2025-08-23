@@ -5,6 +5,7 @@ from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 from langchain_openai import AzureChatOpenAI
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.tools import tool
+from user_manager.user import get_user_questions_answers
 
 load_dotenv()
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
@@ -72,9 +73,22 @@ def query(user_id, history, context, question):
     })
     print("=== Prompt sent to LLM ===")
     print(built_prompt.to_string())
+
+    # Load user questions & answers
+    user_data = get_user_questions_answers(user_id)
+    history_messages = []
+    if user_data["status"] == "FOUND":
+        questions = user_data["questions"]
+        answers = user_data["answers"]
+        # Chuyển list Q/A thành HumanMessage/AIMessage
+        for q, a in zip(questions, answers):
+            history_messages.append(HumanMessage(content=q))
+            history_messages.append(AIMessage(content=a))
+
     # Gửi câu hỏi, LLM tự quyết định có gọi tool không
     response = chat_with_tools.invoke([
         SystemMessage(content=context),
+        *history_messages,
         HumanMessage(content=question)
     ])
 

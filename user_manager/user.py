@@ -46,4 +46,30 @@ def save_chat(user_id, question, answer):
         documents=[answer],
         metadatas=[{"userId": user_id, "question": question, "createdAt": timestamp}]
     )
+
+def get_user_questions_answers(user_id, top_k=5):
+    results = collection.get(where={"userId": user_id})
+    if not results["ids"]:
+        return {"status": "NOT_FOUND", "questions": [], "answers": []}
+    else:
+        items = []
+        for meta, doc in zip(results["metadatas"], results["documents"]):
+            items.append({
+                "question": meta["question"],
+                "answer": doc,
+                "createdAt": meta.get("createdAt")
+            })
+        items.sort(key=lambda x: x["createdAt"], reverse=True)
+
+        if top_k > 0:
+            items = items[:top_k]
+
+        questions = [item["question"] for item in items]
+        answers = [item["answer"] for item in items]
+
+        return {
+            "status": "FOUND",
+            "questions": questions,
+            "answers": answers
+        }
 # END - public function

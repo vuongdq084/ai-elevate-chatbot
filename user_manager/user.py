@@ -73,3 +73,35 @@ def get_user_questions_answers(user_id, top_k=5):
             "answers": answers
         }
 # END - public function
+
+# Additional functions from user_ui.py for web interface
+def load_user_for_web(user_id):
+    """
+    Loads a user's chat history from ChromaDB for web interface.
+    Returns a list of messages for the frontend to display.
+    """
+    # Get all documents for the given user ID, ordered by their creation
+    results = collection.get(where={"userId": user_id})
+
+    # If no results are found, return an empty history
+    if not results["ids"]:
+        return {"status": "NOT_FOUND", "history": []}
+    else:
+        # Reconstruct the chat history as a list of alternating user and bot messages
+        history_list = []
+        # Sort results based on metadatas to maintain chat order
+        items = []
+        for meta, doc in zip(results["metadatas"], results["documents"]):
+            items.append({
+                "question": meta["question"],
+                "answer": doc,
+                "createdAt": meta.get("createdAt")
+            })
+        items.sort(key=lambda x: x["createdAt"], reverse=True)
+        
+        # Create flat list: question, answer, question, answer...
+        for item in items:
+            history_list.append(item["question"])
+            history_list.append(item["answer"])
+        
+        return {"status": "FOUND", "history": history_list}

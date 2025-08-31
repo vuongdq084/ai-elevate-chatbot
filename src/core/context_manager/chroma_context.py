@@ -44,7 +44,7 @@ def build_chroma_index(folder_path: str, collection_name: str = "git_manual"):
  
     # Initialize ChromaDB client with explicit local settings
     try:
-        client = chromadb.PersistentClient(path="./chroma_db", settings=Settings(allow_reset=True))
+        client = chromadb.PersistentClient(path="../../data/chroma_db", settings=Settings(allow_reset=True))
         # Remove collection if exists
         try:
             client.delete_collection(name=collection_name)
@@ -83,7 +83,7 @@ def build_chroma_index(folder_path: str, collection_name: str = "git_manual"):
         raise
  
 # ✅ Load relevant context from ChromaDB based on a question
-def load_context(question: str, collection_name: str = "git_manual") -> Dict:
+def load_context(question: str, collection_name: str = None) -> Dict:
     try:
         embeddings = OpenAIEmbeddings(
             model="text-embedding-3-small",
@@ -93,8 +93,20 @@ def load_context(question: str, collection_name: str = "git_manual") -> Dict:
        
         # Initialize ChromaDB client
         try:
-            client = chromadb.PersistentClient(path="./chroma_db", settings=Settings(allow_reset=True))
+            client = chromadb.PersistentClient(path="../../data/chroma_db", settings=Settings(allow_reset=True))
+            
+            # If no collection name specified, use the first available collection
+            if collection_name is None:
+                collections = client.list_collections()
+                print(f"Available collections: {[col.name for col in collections]}")
+                if not collections:
+                    print("No collections found in ChromaDB")
+                    return {"status": "NOT_FOUND", "context": "", "files": []}
+                collection_name = collections[0].name
+                print(f"Using collection: {collection_name}")
+            
             collection = client.get_collection(name=collection_name)
+            print(f"Collection '{collection_name}' loaded successfully")
         except Exception as e:
             print(f"ChromaDB connection/init error: {e}")
             return {"status": "NOT_FOUND", "context": "", "files": []}

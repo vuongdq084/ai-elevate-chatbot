@@ -21,3 +21,5 @@ env/
 # Ignore db
 chroma/
 chroma_db/
+data/audio/*
+venv_test/*

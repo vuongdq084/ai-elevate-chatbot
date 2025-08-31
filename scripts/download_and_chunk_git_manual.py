@@ -8,16 +8,7 @@ import html2text
 
 # Config
 URL = "https://git-scm.com/docs/user-manual"
-# OUTPUT_DIR = "data/git_manual_chunks"
 OUTPUT_DIR = "data/git_manual"
-# CHUNK_SIZE = 800  # words per chunk
-
-def clean_text(html):
-    soup = BeautifulSoup(html, "html.parser")
-    content_div = soup.find("div", {"id": "content"})
-    if not content_div:
-        raise Exception("Không tìm thấy nội dung chính.")
-    return content_div.get_text(separator="\n")
 
 def format_filename_from_url(url: str) -> str:
     parsed = urlparse(url)
@@ -34,8 +25,8 @@ def save_markdown(html, url, output_dir):
     
     # Convert HTML -> Markdown
     h = html2text.HTML2Text()
-    h.ignore_links = False   # giữ link
-    h.body_width = 0         # không wrap dòng
+    h.ignore_links = False
+    h.body_width = 0
     markdown_text = h.handle(html)
 
     filename = format_filename_from_url(url)
